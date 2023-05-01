@@ -2,23 +2,44 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const sequelize = require('./db');
 const Post = require('./models/posts');
-const port = 3001
+const port = 3001;
+const cors = require('cors');
 
 const app = express();
 
+app.use(cors())
 app.use(bodyParser.json());
+const PAGE_SIZE = 9;
 
 // Get all blog posts
-app.get('/blog-posts', async (req, res) => {
-    try {
-      const blogPosts = await Post.findAll();
-      res.json(blogPosts);
+app.get('/blog-posts', async (req, res, next) => {
+
+
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const offset = (page - 1) * PAGE_SIZE;
+    
+    const count = await Post.count();
+    const blogPosts = await Post.findAll({
+        limit: PAGE_SIZE,
+        offset,
+        order: [['createdAt', 'DESC']],
+      });
+
+      const totalPages = Math.ceil(count / PAGE_SIZE);
+      req.posts = blogPosts;
+      req.pagination = {page, totalPages};
+      next();
+
     } catch (error) {
       console.log(error);
       res.status(500).json({ message: 'Internal server error' });
     }
+  }, (req, res) => {
+    const { pagination, posts } = req;
+    res.send({posts, pagination});
   });
-  
+
   // Get blog post by id
   app.get('/blog-posts/:id', async (req, res) => {
     try {
