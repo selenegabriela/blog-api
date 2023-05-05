@@ -59,8 +59,8 @@ app.get('/blog-posts', async (req, res, next) => {
   // Create blog post
   app.post('/blog-posts', async (req, res) => {
     try {
-      const { title, content } = req.body;
-      const blogPost = await Post.create({ title, content });
+      const { title, content, author } = req.body;
+      const blogPost = await Post.create({ title, content, author });
       res.json(blogPost);
     } catch (error) {
       console.log(error);
