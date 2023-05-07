@@ -72,7 +72,8 @@ app.get('/blog-posts', async (req, res, next) => {
   app.put('/blog-posts/:id', async (req, res) => {
     try {
       const { id } = req.params;
-      const { title, content } = req.body;
+      const { title, content, author } = req.body;
+      console.log('ahhhh ', title, content, author)
       const blogPost = await Post.findByPk(id);
       if (!blogPost) {
         res.status(404).json({ message: 'Blog post not found' });
@@ -80,6 +81,7 @@ app.get('/blog-posts', async (req, res, next) => {
       }
       blogPost.title = title;
       blogPost.content = content;
+      blogPost.author = author;
       await blogPost.save();
       res.json(blogPost);
     } catch (error) {
