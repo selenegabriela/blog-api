@@ -4,12 +4,30 @@ const sequelize = require('./db');
 const Post = require('./models/posts');
 const port = 3001;
 const cors = require('cors');
+const { Op } = require('sequelize');
 
 const app = express();
 
 app.use(cors())
 app.use(bodyParser.json());
 const PAGE_SIZE = 9;
+
+app.get('/blog-posts/search', async(req, res) => {
+  const searchWord = req.query.q;
+  try {
+    const posts = await Post.findAll({
+      where: {
+        title: {
+          [Op.like]: `%${searchWord}%`
+        }
+      }
+    });
+    res.json(posts);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'An error occurred while searching for posts.' });
+  }
+});
 
 // Get all blog posts
 app.get('/blog-posts', async (req, res, next) => {
@@ -55,6 +73,7 @@ app.get('/blog-posts', async (req, res, next) => {
       res.status(500).json({ message: 'Internal server error' });
     }
   });
+  
   
   // Create blog post
   app.post('/blog-posts', async (req, res) => {
